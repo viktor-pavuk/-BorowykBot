@@ -1,8 +1,8 @@
 body {
     --bg-color: var(--tg-theme-bg-color, #000000);
     font-family: sans-serif;
-    background-color: var(--bg-color);
-    color: var(--tg-theme-text-color, #ffffff);
+    background-color: #000000;
+    color:  #ffffff;
     font-size: 14px;
     margin: 0;
     padding: 0;
@@ -348,15 +348,6 @@ small {
 .main {
     flex: 1;
 }
-.footer {
-    display: flex;
-    justify-content: space-around;
-    background-color: #222;
-    margin: 8px;
-    padding: 8px;
-    border-radius: 8px;
-    color: #efefef;
-}
 
 .bed {
     display: flex;
@@ -386,4 +377,19 @@ small {
     flex-direction: column;
     justify-content: space-between;
     padding: 8px;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-around;
+    background-color: #222;
+    margin: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    color: #efefef;
+}
+
+.footer a {
+    color: #ffffff;
+    text-decoration: none;
 }
