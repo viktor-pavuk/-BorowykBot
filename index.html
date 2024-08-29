@@ -21,41 +21,204 @@
     <title></title>
     <link rel="stylesheet" href="styles.css">
 </script>
-<body class="" style="visibility: hidden;">
+<body>
     <section id="top_sect" class="second">
-        <button id="main_btn" onclick="DemoApp.sendMessage('');">Send «Hello, World!»</button>
-        <button id="with_webview_btn" onclick="DemoApp.sendMessage('', true);">Send «Hello, World!» with inline webview button</button>
-        <button id="data_btn" onclick="DemoApp.sendTime(true);">Send current time to bot (x10)</button>
-        <button onclick="DemoApp.expand();">Expand Webview</button>
-        <button onclick="DemoApp.toggleBackButton(this);">Show Back Button</button>
-        <button onclick="DemoApp.toggleSettingsButton(this);">Show Settings Button</button>
-        <button onclick="DemoApp.toggleMainButton(this);">Hide Main Button</button>
-        <button onclick="DemoApp.toggleSwipeBehavior(this);">Disable Vertical Swypes</button>
-        <input type="text" placeholder="Input text in regular input..." id="regular_field" />
-        <div
-            class="input"
-            contenteditable="true"
-            data-placeholder="Input text in contenteditable field..."
-            id="text_field"
-        ></div>
-        <div id="peer_wrap" style="display:none">
-            <img id="peer_photo" class="chat_img" src="">
-            <span id="peer_name"></span>
-        </div>
-        <div class="sect_row">Header: <input type="color" id="header_color_input" />
-            <select id="header_color_sel">
-                <option value="bg_color" selected>bg_color</option>
-                <option value="secondary_bg_color">secondary_bg_color</option>
-                <option value="custom" id="header_color_val">custom...</option>
-            </select>
-        </div>
-        <div class="sect_row">Background: <input type="color" id="bg_color_input" />
-            <select id="bg_color_sel">
-                <option value="bg_color" selected>bg_color</option>
-                <option value="secondary_bg_color">secondary_bg_color</option>
-                <option value="custom" id="bg_color_val">custom...</option>
-            </select>
-        </div>
+        <button id="main_btn" onclick="console.log('Hello, World!');">Farm UAH</button>
     </section>
+
+    <script type="application/javascript">    
+        const DemoApp = {
+            initData      : Telegram.WebApp.initData || '',
+            initDataUnsafe: Telegram.WebApp.initDataUnsafe || {},
+            MainButton: Telegram.WebApp.MainButton,
+            BackButton: Telegram.WebApp.BackButton,
+            SettingsButton: Telegram.WebApp.SettingsButton,
+    
+            init(options) {
+                document.body.style.visibility = ''
+                Telegram.WebApp.ready()
+                Telegram.WebApp.MainButton.setParams({
+                    text      : 'CLOSE WEBVIEW',
+                    is_visible: true
+                }).onClick(DemoApp.close)
+                Telegram.WebApp.BackButton.onClick(function() {
+                    DemoApp.showAlert('Back button pressed')
+                })
+                Telegram.WebApp.SettingsButton.onClick(function() {
+                    DemoApp.showAlert('Settings opened!')
+                })
+            },
+            expand() {
+                Telegram.WebApp.expand();
+            },
+            close() {
+                Telegram.WebApp.close();
+            },
+            toggleMainButton(el) {
+                const mainButton = Telegram.WebApp.MainButton;
+                if (mainButton.isVisible) {
+                    mainButton.hide();
+                    el.innerHTML = 'Show Main Button';
+                } else {
+                    mainButton.show();
+                    el.innerHTML = 'Hide Main Button';
+                }
+            },
+            toggleBackButton(el) {
+                if (DemoApp.BackButton.isVisible) {
+                    DemoApp.BackButton.hide();
+                    el.innerHTML = 'Show Back Button';
+                } else {
+                    DemoApp.BackButton.show();
+                    el.innerHTML = 'Hide Back Button';
+                }
+            },
+            toggleSettingsButton(el) {
+                if (DemoApp.SettingsButton.isVisible) {
+                    DemoApp.SettingsButton.hide();
+                    el.innerHTML = 'Show Settings Button';
+                } else {
+                    DemoApp.SettingsButton.show();
+                    el.innerHTML = 'Hide Settings Button';
+                }
+            },
+            toggleSwipeBehavior(el) {
+                if (Telegram.WebApp.isVerticalSwipesEnabled) {
+                    Telegram.WebApp.disableVerticalSwipes();
+                    el.innerHTML = 'Enable Vertical Swypes';
+                } else {
+                    Telegram.WebApp.enableVerticalSwipes();
+                    el.innerHTML = 'Disable Vertical Swypes';
+                }
+            },
+    
+            // version to string Example: '6.9'
+            doesntSupport(version) {
+                // console.log("version: " + version);
+                // console.log("realVersion: " + this.version());
+                // console.log("doesntSupport: " + this.isVersionAtLeast(version));
+                if (!this.isVersionAtLeast(version)) {
+                    Telegram.WebApp.showAlert('This feature is not supported in this version of Telegram', function () {
+                        Telegram.WebApp.close();
+                    });
+                    throw new Error('This feature is not supported in this version of Telegram');
+                }
+            },
+    
+            // actions
+            sendMessage(msg_id, with_webview) {
+                if (!DemoApp.initDataUnsafe.query_id) {
+                    alert('WebViewQueryId not defined');
+                    return;
+                }
+    
+                document.querySelectorAll('button').forEach((btn) => btn.disabled = true);
+    
+                const btn       = document.querySelector('#btn_status');
+                btn.textContent = 'Sending...';
+    
+                DemoApp.apiRequest('sendMessage', {
+                    msg_id      : msg_id || '',
+                    with_webview: !DemoApp.initDataUnsafe.receiver && with_webview ? 1 : 0
+                }, function (result) {
+                    document.querySelectorAll('button').forEach((btn) => btn.disabled = false);
+    
+                    if (result.response) {
+                        if (result.response.ok) {
+                            btn.textContent   = 'Message sent successfully!';
+                            btn.className     = 'ok';
+                            btn.style.display = 'block';
+                        } else {
+                            btn.textContent   = result.response.description;
+                            btn.className     = 'err';
+                            btn.style.display = 'block';
+                            alert(result.response.description);
+                        }
+                    } else if (result.error) {
+                        btn.textContent   = result.error;
+                        btn.className     = 'err';
+                        btn.style.display = 'block';
+                        alert(result.error);
+                    } else {
+                        btn.textContent   = 'Unknown error';
+                        btn.className     = 'err';
+                        btn.style.display = 'block';
+                        alert('Unknown error');
+                    }
+                });
+            }
+        }
+    
+        const DemoAppMenu = {
+            init() {
+                DemoApp.init();
+                document.body.classList.add('gray');
+                Telegram.WebApp.setHeaderColor('secondary_bg_color');
+            }
+        };
+    
+        const DemoAppInitData = {
+            init() {
+                DemoApp.init();
+                Telegram.WebApp.onEvent('themeChanged', function () {
+                    document.getElementById('theme_data').innerHTML = JSON.stringify(Telegram.WebApp.themeParams, null, 2);
+                });
+                document.getElementById('webview_data').innerHTML = JSON.stringify(DemoApp.initDataUnsafe, null, 2);
+                document.getElementById('theme_data').innerHTML   = JSON.stringify(Telegram.WebApp.themeParams, null, 2);
+                DemoApp.checkInitData();
+            }
+        };
+    
+        const DemoAppViewport = {
+            init() {
+                DemoApp.init();
+                Telegram.WebApp.onEvent('viewportChanged', DemoAppViewport.setData);
+                DemoAppViewport.setData();
+            },
+            setData() {
+                document.querySelector('.viewport-border').setAttribute('text', window.innerWidth + ' x ' + round(Telegram.WebApp.viewportHeight, 2))
+                document.querySelector('.viewport-stable_border').setAttribute('text', window.innerWidth + ' x ' + round(Telegram.WebApp.viewportStableHeight, 2) +
+                    ' | is_expanded: ' + (Telegram.WebApp.isExpanded ? 'true' : 'false'));
+            }
+        }
+    
+        function cleanHTML(value) {
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/\n/g, '<br/>')
+        }
+    
+        function byteLength(str) {
+            if (window.Blob) {
+                try {
+                    return new Blob([str]).size;
+                } catch (e) {
+                }
+            }
+    
+            let s = str.length;
+            for (let i = str.length - 1; i >= 0; i--) {
+                const code = str.charCodeAt(i);
+                if (code > 0x7f && code <= 0x7ff) {
+                    s++;
+                } else if (code > 0x7ff && code <= 0xffff) {
+                    s += 2;
+                }
+    
+                if (code >= 0xDC00 && code <= 0xDFFF) {
+                    i--;
+                }
+            }
+            return s;
+        }
+    
+        function round(val, d) {
+            const k = Math.pow(10, d || 0);
+            return Math.round(val * k) / k;
+        }
+    </script>
 </body>
 </html>
